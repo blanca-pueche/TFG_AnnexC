@@ -1,0 +1,388 @@
+@startuml
+allowmixing
+package utils {
+package adducts {
+' Interface declaration
+interface ExpertKnowledge {
+  + getMz(): double
+  + getName(): String
+  + getCompleteName(): String
+}
+
+' Enums implementing ExpertKnowledge
+enum CommonAdductNegative {
+  -- Constants --
+  M_MINUS_H
+  M_MINUS_H_PLUS_CH3COONa
+  M_PLUS_CH3COO
+  M_PLUS_CH3COO_PLUS_CH3COONa
+  M_PLUS_CH3COO_PLUS_2CH3COONa
+  M_PLUS_CH3COO_PLUS_3CH3COONa
+  M_PLUS_HCOO
+  M_PLUS_HCOO_PLUS_CH3COONa
+  M_PLUS_CL
+
+  -- Attributes --
+  - name: String
+  - mz: double
+}
+
+enum CommonAdductPositive {
+  -- Constants --
+  M_PLUS_H
+  M_PLUS_NA
+  M_PLUS_K
+  M_PLUS_C2H7N2
+  M_PLUS_NH4
+
+  -- Attributes --
+  - name: String
+  - mz: double
+}
+
+enum CommonISFNegative {
+  -- Constants --
+  M_PLUS_CH3COO_MINUS_CH3COOCH3
+
+  -- Attributes --
+  - name: String
+  - mz: double
+}
+
+enum CommonISFPositive {
+  -- Constants --
+  M_PLUS_H_MINUS_H2O
+  CHOLESTADIENE_ION
+
+  -- Attributes --
+  - name: String
+  - mz: double
+}
+
+' Class: FoundAdduct
+class FoundAdduct {
+  - adductName: String
+  - mzFeature: double
+  - intensity: double
+  - rt: double
+  - charge: int
+
+  + getAdductName(): String
+  + getMzFeature(): double
+  + getIntensity(): double
+  + getRt(): double
+  + getCharge(): int
+  + equals(Object o): boolean
+  + hashCode(): int
+  + toString(): String
+}
+}
+package lipids {
+' Class: FoundLipid
+class FoundLipid {
+  - lipid: Lipid
+  - annotatedLipid: MatchedLipid
+  - score: Double
+  - descrCorrect: String
+  - descrIncorrect: String
+  - adducts: List<FoundAdduct>
+
+  + getAdducts(): String
+  + setAdducts(adducts: List<FoundAdduct>): void
+  + getListAdducts(): List<FoundAdduct>
+  + getScore(): Double
+  + setScore(score: double): void
+  + getLipid(): Lipid
+  + setLipid(lipid: Lipid): void
+  + getDescrCorrect(): String
+  + setDescrCorrect(descrCorrect: String): void
+  + getDescrIncorrect(): String
+  + setDescrIncorrect(descrIncorrect: String): void
+  + normalizeScore(rawScore: double, maxScore: double): double
+  + setFinalScore(score: double): void
+  + loadAdductsFromXML(reader: XMLStreamReader): List<FoundAdduct>
+  + loadSingleAdductFromXML(reader: XMLStreamReader): FoundAdduct
+  + loadFromXML(reader: XMLStreamReader, possibleFiles: Collection<RawDataFile>): FoundLipid
+  + saveToXML(writer: XMLStreamWriter, flist: ModularFeatureList, row: ModularFeatureListRow): void
+}
+class Lipid {
+    -String name
+    -String abbreviation
+    -boolean isMainLipid
+    -boolean isAvailable
+    -Map<CommonAdductPositive, Integer> positiveAdducts;
+    -Map<CommonAdductNegative, Integer> negativeAdducts;
+    -Map<CommonISFPositive, Integer> positiveISF;
+    -Map<CommonISFNegative, Integer> negativeISF;
+
+    + getName() : String
+    + getAbbr() : String
+}
+}
+package params {
+enum MobilePhases {
+  -- Constants --
+  CH3COO
+  NH4
+
+  -- Attributes --
+  - name: String
+}
+
+class MobilePhaseParameter {
+  - String name
+  - String description_mp
+  - ValueType[] choices
+  - ValueType[] values
+  - int minNumber
+
+  + getName() : String
+  + getChoices() : ValueType[]
+  + setChoices(choices : ValueType[]) : void
+  + getDescription() : String
+  + getValue() : ValueType[]
+  + setValueFromComponent(component_mp : MobilePhaseComponent) : void
+  + setValueToComponent(mobilePhaseComponent : MobilePhaseParameter, newValue : ValueType[]) : void
+  + createEditingComponent() : MobilePhaseComponent
+  + cloneParameter() : MobilePhaseParameter<ValueType>
+  + getComponentVgrowPriority() : Priority
+  + loadValueFromXML(xmlElement : Element) : void
+  + saveValueToXML(xmlElement : Element) : void
+  + checkValue(errors : Collection<String>) : boolean
+}
+
+class MobilePhaseComponent {
+  - CheckBoxTreeItem<Object> rootItem
+  - CheckBoxTreeView<Object> mobilePhases
+  - Map<MobilePhases, CheckBoxTreeItem<Object> classToItemMap
+
+  + getValue() : Object[]
+  + setValue(values : Object[]) : void
+}
+
+enum SampleTypes {
+  -- Constants --
+  PLASMA
+  BLOOD
+  CEREBROSPINAL_FLUID
+
+  -- Attributes --
+  - name: String
+}
+class SampleTypeParameter {
+  - String name
+  - String description_mp
+  - ValueType[] choices
+  - ValueType[] values
+  - int minNumber
+
+  + getName() : String
+  + getChoices() : ValueType[]
+  + setChoices(choices : ValueType[]) : void
+  + getDescription() : String
+  + getValue() : ValueType[]
+  + setValueFromComponent(component_mp : SampleTypeComponent) : void
+  + setValueToComponent(sampleTypeComponent : SampleTypeComponent, newValue : ValueType[]) : void
+  + createEditingComponent() : MobilePhaseComponent
+  + cloneParameter() : MobilePhaseParameter<ValueType>
+  + getComponentVgrowPriority() : Priority
+  + loadValueFromXML(xmlElement : Element) : void
+  + saveValueToXML(xmlElement : Element) : void
+  + checkValue(errors : Collection<String>) : boolean
+}
+
+class SampleTypeComponent {
+  - ToggleGroup toggleGroup
+  - Map<SampleTypes, RadioButton> classToItemMap
+
+  + getValue() : Object[]
+  + setValue(values : Object[]) : void
+}
+}
+
+class RowInfo{
+  - List<Double> mzList
+  - List<Float> intensityList
+  - List<Float> rtList
+
+  + getMzList() : List<Double>
+  + getIntensityList() : List<Float>
+  + getRtList() : List<Float>
+}
+
+class LipidIDExpertKnowledgeSearch {
+  + findAnnotatedRows(group_row : RowGroup) : List<FeatureListRow>
+  + findRowInfo(group_row : RowGroup) : RowInfo
+  + findAdducts(adductsISF : List<ExpertKnowledge>, rowInfo : RowInfo, mzTolerance : double, row : FeatureListRow, match : MatchedLipid) : List<FoundAdduct>
+  + findLipidsPositive(row : FeatureListRow, lipid : MatchedLipid, found : List<FoundAdduct>) : void
+  + findLipidsNegative(row : FeatureListRow, lipid : MatchedLipid, found : List<FoundAdduct>) : void
+}
+}
+class LipidIDExpertKnowledgeParameters {
+  + FeatureListParameter featureList
+  + MZToleranceParameter mzTolerance
+  + MobilePhaseParameter<Object> mobilePhaseParameter
+  + SampleTypeParameter<Object> sampleTypeParameter
+
+  + showSetupDialog(valueCheckRequired : boolean) : ExitCode
+}
+
+class LipidIDExpertKnowledgeModule {
+  + getName() : String
+  + getParameterSetClass() : Class
+  + getDescription() : String
+  + runModule(project : MZmineProject, parameters : ParameterSet, tasks : Collection<Task>, moduleCallDate : Instant) : ExitCode
+  + getModuleCategory() : MZmineModuleCategory
+}
+
+class LipidIDExpertKnowledgeTask {
+  - Logger logger
+  - double finishedSteps
+  - double totalSteps
+  - ParameterSet parameters
+  - MZTolerance mzTolerance
+  - List<MobilePhase> mobilePhase
+  - SampleTypes sampleType
+  - FeatureList featureList
+
+  + getTaskDescription() : String
+  + getFinishedPercentage() : double
+  + isCanceled() : boolean
+  + isFinished() : boolean
+  + error(message : String) : void
+  + setOnFinished(runnable : Runnable) : void
+  + run() : void
+  + getPolarityType(group_row : RowGroup) : PolarityType
+}
+
+package rules {
+  package negative {
+    artifact "negative rules drl files"
+    'artifact "Cer_NegativeCheck.drl"
+    'artifact "DG_NegativeCheck.drl"
+    'artifact "FA_NegativeCheck.drl"
+    'artifact "HexCer_NegativeCheck.drl"
+    'artifact "LPC_NegativeCheck.drl"
+    'artifact "LPC_OP_NegativeCheck.drl"
+    'artifact "LPE_NegativeCheck.drl"
+    'artifact "LPE_OP_NegativeCheck.drl"
+    'artifact "LPI_NegativeCheck.drl"
+    'artifact "PC_NegativeCheck.drl"
+    'artifact "PC_OP_NegativeCheck.drl"
+    'artifact "PE_NegativeCheck.drl"
+    'artifact "PE_OP_NegativeCheck.drl"
+    'artifact "PI_NegativeCheck.drl"
+    'artifact "SM_NegativeCheck.drl"
+  }
+  package positive {
+    artifact "positive rules drl files"
+      'artifact "CAR_PositiveCheck.drl"
+      'artifact "CE_PositiveCheck.drl"
+      'artifact "Cer_PositiveCheck.drl"
+      'artifact "Chol_PositiveCheck.drl"
+      'artifact "DG_PositiveCheck.drl"
+      'artifact "HexCer_PositiveCheck.drl"
+      'artifact "LPC_PositiveCheck.drl"
+      'artifact "LPC_OP_PositiveCheck.drl"
+      'artifact "LPE_PositiveCheck.drl"
+      'artifact "LPE_OP_PositiveCheck.drl"
+      'artifact "LPI_PositiveCheck.drl"
+      'artifact "PC_PositiveCheck.drl"
+      'artifact "PC_OP_PositiveCheck.drl"
+      'artifact "PE_PositiveCheck.drl"
+      'artifact "PE_OP_PositiveCheck.drl"
+      'artifact "PI_PositiveCheck.drl"
+      'artifact "SM_PositiveCheck.drl"
+      'artifact "TG_PositiveCheck.drl"
+    }
+}
+package lipidexpertknowledge{
+class LipidValidationAdductsType {
+  - StringConverter<String> converter
+
+  + getUniqueID() : String
+  + getHeaderString() : String
+  + fromString(s : String) : String
+  + getStringConverter() : StringConverter
+}
+
+class LipidValidationCorrectDescriptionType {
+    - StringConverter<String> converter
+
+    + getUniqueID() : String
+    + getHeaderString() : String
+    + fromString(s : String) : String
+    + getStringConverter() : StringConverter
+}
+
+class LipidValidationIncorrectDescriptionType {
+    - StringConverter<String> converter
+
+    + getUniqueID() : String
+    + getHeaderString() : String
+    + fromString(s : String) : String
+    + getStringConverter() : StringConverter
+}
+
+class LipidValidationScoreType {
+    + getUniqueID() : String
+    + getHeaderString() : String
+    + getDefaultVisibility() : boolean
+}
+class LipidValidationListType {
+    - static List<DataType> subTypes
+    + String getUniqueID()
+    + String getHeaderString()
+    + List<DataType> getSubDataTypes()
+    + <K> K map(DataType<K> subType, FoundLipid lipid)
+    + void saveToXML(XMLStreamWriter writer, Object value, ModularFeatureList flist, ModularFeatureListRow row, ModularFeature feature, RawDataFile file)
+    + Object loadFromXML(XMLStreamReader reader, MZmineProject project, ModularFeatureList flist, ModularFeatureListRow row, ModularFeature feature, RawDataFile file)
+    + boolean getDefaultVisibility()
+}
+}
+
+' Relationships
+CommonAdductNegative ..|> ExpertKnowledge : implements
+CommonAdductPositive ..|> ExpertKnowledge : implements
+CommonISFNegative ..|> ExpertKnowledge : implements
+CommonISFPositive ..|> ExpertKnowledge : implements
+
+Lipid --> "uses" CommonAdductPositive
+Lipid --> "uses" CommonAdductNegative
+Lipid --> "uses" CommonISFPositive
+Lipid --> "uses" CommonISFNegative
+
+FoundLipid *-- "1" Lipid : contains
+FoundLipid *-- "0..*" FoundAdduct : has
+FoundLipid --> MatchedLipid : links to
+
+MobilePhaseParameter --> MobilePhaseComponent : manages UI for
+MobilePhaseComponent --> MobilePhases : selects from
+SampleTypeParameter --> SampleTypeComponent : manages UI for
+SampleTypeComponent --> SampleTypes : selects from
+
+LipidIDExpertKnowledgeParameters --> MobilePhaseParameter : contains
+LipidIDExpertKnowledgeParameters --> SampleTypeParameter : contains
+
+LipidIDExpertKnowledgeTask --> LipidIDExpertKnowledgeParameters : uses
+LipidIDExpertKnowledgeTask --> MobilePhases : configured with
+LipidIDExpertKnowledgeTask --> SampleTypes : configured with
+LipidIDExpertKnowledgeTask --> LipidIDExpertKnowledgeSearch : calls
+
+LipidIDExpertKnowledgeModule --> LipidIDExpertKnowledgeParameters : declares
+LipidIDExpertKnowledgeModule --> LipidIDExpertKnowledgeTask : creates
+
+LipidIDExpertKnowledgeSearch --> RowGroup : analyzes
+LipidIDExpertKnowledgeSearch --> RowInfo : extracts
+LipidIDExpertKnowledgeSearch --> ExpertKnowledge : matches
+LipidIDExpertKnowledgeSearch --> FoundAdduct : detects
+LipidIDExpertKnowledgeSearch --> MatchedLipid : verifies
+
+LipidIDExpertKnowledgeSearch ..> "rules" : <<uses>> fires rules from
+
+LipidValidationListType --> LipidValidationAdductsType
+LipidValidationListType --> LipidValidationCorrectDescriptionType
+LipidValidationListType --> LipidValidationIncorrectDescriptionType
+LipidValidationListType --> LipidValidationScoreType
+
+@enduml
